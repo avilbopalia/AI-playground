@@ -1,0 +1,7 @@
+# Large model binaries (hosted via GitHub release 'models-v1')
+models/
+*.tar.gz
+/tmp/
+
+.DS_Store
+.omo/
