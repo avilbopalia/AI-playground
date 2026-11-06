@@ -75,3 +75,28 @@ echo "  GLINER_MODELS=${MODELS_DIR}/PII-Engineer-Multi-NER-v2.1 \\"
 echo "  CHINESE_NER_MODEL=${MODELS_DIR}/PII-Engineer-Chinese-NER-v1.0 \\"
 echo "  ./target/release/pii-engineer-server"
 echo "  # API: http://localhost:8000  (POST /api/detect)"
+
+# 4. ONNX Runtime (required at runtime by `ort` load-dynamic)
+ORT_VERSION="1.24.1"
+ORT_DIR="${ROOT}/onnxruntime"
+if [ ! -f "${ORT_DIR}/lib/libonnxruntime.dylib" ] && [ ! -f "${ORT_DIR}/lib/libonnxruntime.so" ]; then
+  echo "[ort] downloading ONNX Runtime ${ORT_VERSION} ..."
+  OS="$(uname -s)"; ARCH="$(uname -m)"
+  case "${OS}-${ARCH}" in
+    Darwin-arm64)  ORT_ASSET="onnxruntime-osx-arm64-${ORT_VERSION}.tgz" ;;
+    Darwin-x86_64) ORT_ASSET="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz" ;;
+    Linux-x86_64)  ORT_ASSET="onnxruntime-linux-x64-${ORT_VERSION}.tgz" ;;
+    Linux-aarch64) ORT_ASSET="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz" ;;
+    *) echo "[ort] unsupported platform ${OS}-${ARCH}; download manually from https://github.com/microsoft/onnxruntime/releases"; ORT_ASSET="" ;;
+  esac
+  if [ -n "${ORT_ASSET}" ]; then
+    ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ASSET}"
+    curl -L --fail -o "/tmp/${ORT_ASSET}" "${ORT_URL}"
+    mkdir -p "${ORT_DIR}"
+    tar -xzf "/tmp/${ORT_ASSET}" -C "${ORT_DIR}" --strip-components=1
+    rm -f "/tmp/${ORT_ASSET}"
+    echo "[ort] installed to ${ORT_DIR}"
+  fi
+else
+  echo "[ort] already present"
+fi
